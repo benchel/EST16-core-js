@@ -3,99 +3,59 @@ import {
   , getNode
   , insertLast
   , clearContent
+  , getRandom
+  , addClass
+  , showAlert
+  , shake
 } from './lib/index.js'
 
-/* named export =>  import { 함수이름/변수이름 } from '경로설정'  
- 내보낼 때의 이름과 가져올 때의 이름이 동일해야함(단, 별칭 부여 가능) 1:n
- import { getNode, getNodes as $ } from "./lib/dom/getNode.js"
-import { insertLast } from "./lib/dom/insert.js" 
-*/
+import jujeobData from './data/data.js'
 
-/* default export =>  함수이름/변수이름 from 경로. 
-한 파일에 하나만 내보냄 1:1
-디폴트 익스포트로 여러 개의 함수를 내보내야할 때는
-객체에 여러 개의 함수를 담아서 내보내서 사용함 
-import clearContent from "./lib/dom/clearContent.js";
-*/
+const jujeobButton = getNode('input[type="submit"');
+const nameField = getNode('#nameField');
+const result = getNode('.result');
 
-// 1. input 선택하기
-// 2. input 이벤트 바인딩
-//    -addEventListener('input')
-// 3. input value값 가져오기
-// 4. 숫자 더하기
-// 5. result에 출력하기
+function jujeobHandler(e) {
+  e.preventDefault();
+  
+  let name = nameField.value;
+  let list = jujeobData(name);
+  let jujeobStr = list[getRandom(list.length)];
 
-function phase1(){
+  if(!name || name.replaceAll(' ', '') === '') {
+    showAlert('.alert-error', '공백은 허용되지 않습니다.');
+    shake(nameField);
+    return;
+  }
 
-    const first = getNode('#firstNumber');
-    const second = getNode('#secondNumber');
-    const result = getNode('.result');
-    const clear = getNode('#clear');
-
-
-    function handleInput(){
-
-      const firstValue = Number(first.value);
-      const secondValue = +second.value;
-      const total = firstValue + secondValue;
-
-      clearContent(result);
-      insertLast(result,total);
-    }
-
-
-    function handleClear(e){
-      e.preventDefault();
-      clearContent(first);
-      clearContent(second);
-      clearContent(result);
-      first.focus();
-    }
-
-
-
-    first.addEventListener('input',handleInput)
-    second.addEventListener('input',handleInput)
-    clear.addEventListener('click',handleClear)
-
-
-
+  if(!isNaN(Number(name))) {
+    showAlert('.alert-error', '정확한 이름을 입력해주세요.');
+    return;
+  }
+  
+  clearContent(result);
+  insertLast(result, jujeobStr);
 }
 
+/*
+function jujeobHandler(e) {
+  e.preventDefault();
 
+  const nickName = getNode('#nameField').value;
+  let num = Math.floor(Math.random() * (50 - 0 + 1)) + 0;
+  let jujeobStr = jujeobData(nickName)[num];
 
-function phase2(){
-  // const first = getNode('#firstNumber');
-  // const second = getNode('#secondNumber');
-  const calculator = getNode('.calculator');
   const result = getNode('.result');
-  const clear = getNode('#clear');
-  const numberInputs = [...document.querySelectorAll('input:not(#clear)')];
+  clearContent(result);
+  insertLast(result, jujeobStr);
+}*/
 
+jujeobButton.addEventListener('click', jujeobHandler);
 
-  function handleInput(){
-    const total = numberInputs.reduce((acc,cur)=> acc + Number(cur.value),0);
-    
-    result.textContent = ''
-    insertLast(result,total);
-
-  }
-
-  function handleClear(e){
-    e.preventDefault();
-    console.log( numberInputs );
-    
-    numberInputs.forEach((elem)=> elem.textContent = '')
-    result.textContent = '-'
-  }
-
-
-  calculator.addEventListener('input',handleInput)
-  clear.addEventListener('click',handleClear)
-
+function copyHandler() {
+  const text = this.textContent;
+  navigator.clipboard.writeText(text);
+  showAlert('.alert-success', '클립보드 복사 완료!');
 }
+result.addEventListener('click', copyHandler);
 
-
-
-
-phase2()

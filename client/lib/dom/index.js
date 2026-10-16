@@ -3,5 +3,7 @@ export * from './attr.js'
 export * from './css.js'
 export * from './insert.js'
 export * from './getNode.js'
+export * from './showAlert.js'
 export {default as clearContent} from './clearContent.js'
+
 

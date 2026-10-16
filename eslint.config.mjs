@@ -3,17 +3,23 @@ import globals from "globals";
 import { defineConfig } from "eslint/config";
 
 const customGlobals = {
-  typeOf: "readonly",
-  isObject: "readonly",
-  isArray: "readonly",
-  isBoolean: "readonly",
-  isString: "readonly",
-  isNumber: "readonly",
-  isBigInt: "readonly",
-  isNull: "readonly",
-  isUndefined: "readonly",
-  isFunction: "readonly",
-  isMath: "readonly",
+  typeOf: 'readonly',
+  isObject: 'readonly',
+  isArray: 'readonly',
+  isBoolean: 'readonly',
+  isString: 'readonly',
+  isNumber: 'readonly',
+  isBigInt: 'readonly',
+  isNull: 'readonly',
+  isUndefined: 'readonly',
+  isFunction: 'readonly',
+  isMath: 'readonly',
+  getNode: 'readonly',
+  getNodes: 'readonly',
+  attr: 'readonly',
+  insertLast: 'readonly',
+  throttle: 'readonly',
+  debounce: 'readonly',
 };
 
 export default defineConfig([

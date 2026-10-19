@@ -1,61 +1,64 @@
-import {
-  attr
-  , getNode
-  , insertLast
-  , clearContent
-  , getRandom
-  , addClass
-  , showAlert
-  , shake
-} from './lib/index.js'
+import { clearContent, diceAnimation, getNode, getNodes, insertLast } from './lib/index.js';
+import { endScroll } from './lib/utils/endScroll.js';
 
-import jujeobData from './data/data.js'
+// 주사위 굴리기 버튼 선택
+// 클릭 이벤트 바인딩
 
-const jujeobButton = getNode('input[type="submit"');
-const nameField = getNode('#nameField');
-const result = getNode('.result');
+const [rollingButton, recordButton, resetButton] = getNodes('.buttonGroup > button');
 
-function jujeobHandler(e) {
-  e.preventDefault();
-  
-  let name = nameField.value;
-  let list = jujeobData(name);
-  let jujeobStr = list[getRandom(list.length)];
+const recordListWrapper = getNode('.recordListWrapper');
 
-  if(!name || name.replaceAll(' ', '') === '') {
-    showAlert('.alert-error', '공백은 허용되지 않습니다.');
-    shake(nameField);
-    return;
+const handleRollingDice = (() => {
+  let isClicked = false;
+  let interval;
+
+  return function() {
+    if (!isClicked) {
+      interval = setInterval(diceAnimation, 300);
+      recordButton.disabled = true;
+      resetButton.disabled = true;
+    } else {
+      clearInterval(interval);
+       recordButton.disabled = false;
+      resetButton.disabled = false;
+    }
+    isClicked = !isClicked;
   }
+})()
 
-  if(!isNaN(Number(name))) {
-    showAlert('.alert-error', '정확한 이름을 입력해주세요.');
-    return;
-  }
-  
-  clearContent(result);
-  insertLast(result, jujeobStr);
+let count = 0;
+let total = 0;
+
+function createItem(value) {
+  const template = `
+    <tr>
+      <td>${++count}</td>
+      <td>${value}</td>
+      <td>${total += value}</td>
+    </tr>
+    `;
+
+  return template;
 }
 
-/*
-function jujeobHandler(e) {
-  e.preventDefault();
-
-  const nickName = getNode('#nameField').value;
-  let num = Math.floor(Math.random() * (50 - 0 + 1)) + 0;
-  let jujeobStr = jujeobData(nickName)[num];
-
-  const result = getNode('.result');
-  clearContent(result);
-  insertLast(result, jujeobStr);
-}*/
-
-jujeobButton.addEventListener('click', jujeobHandler);
-
-function copyHandler() {
-  const text = this.textContent;
-  navigator.clipboard.writeText(text);
-  showAlert('.alert-success', '클립보드 복사 완료!');
+function renderRecordItem() {
+  const dice = +getNode('#cube').getAttribute('dice');
+  insertLast('tbody', createItem(dice));
 }
-result.addEventListener('click', copyHandler);
 
+function handleRecord() {
+  recordListWrapper.hidden = false;
+  renderRecordItem();
+  endScroll(recordListWrapper);
+}
+
+function handleReset() {
+  clearContent('tbody');
+  count = 0;
+  total = 0;
+  recordListWrapper.hidden = true;
+}
+
+rollingButton.addEventListener('click', handleRollingDice);
+recordButton.addEventListener('click', handleRecord);
+resetButton.addEventListener('click', handleReset);

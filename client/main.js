@@ -1,64 +1,104 @@
-import { clearContent, diceAnimation, getNode, getNodes, insertLast } from './lib/index.js';
-import { endScroll } from './lib/utils/endScroll.js';
+/* eslint-disable no-undef */
+import { delayP, tiger, getNode, renderUserCard, changeColor, renderSpinner, renderEmptyCard, clearContent } from './lib/index.js'
 
-// 주사위 굴리기 버튼 선택
-// 클릭 이벤트 바인딩
+const END_POINT = 'https://6ad6f705f71f154ac4878755.mockapi.io/users';
 
-const [rollingButton, recordButton, resetButton] = getNodes('.buttonGroup > button');
+//const res = await tiger.get(END_POINT)
+//console.log(res.data);
 
-const recordListWrapper = getNode('.recordListWrapper');
+const cards = getNode('.user-card-inner');
 
-const handleRollingDice = (() => {
-  let isClicked = false;
-  let interval;
+async function renderUserList() {
 
-  return function() {
-    if (!isClicked) {
-      interval = setInterval(diceAnimation, 300);
-      recordButton.disabled = true;
-      resetButton.disabled = true;
-    } else {
-      clearInterval(interval);
-       recordButton.disabled = false;
-      resetButton.disabled = false;
-    }
-    isClicked = !isClicked;
+  renderSpinner(cards);
+
+  try{
+
+    const response = await tiger.get(END_POINT);
+    const data = response.data;
+
+    await delayP(1000);
+
+    gsap.to('.loadingSpinner', {
+      opacity:0
+      , onComplete() { 
+        this._targets[0].remove();
+      }
+    })
+
+    // data를 가지고 유저의 목록을 article로 화면에 렌더링
+    data.forEach((user) => renderUserCard(cards, user));
+    changeColor('.user-card')
+
+    gsap.from('.user-card',{
+      x:-100,
+      opacity:0,
+      stagger:{
+        each:0.1,
+        from:'start'
+      }
+    })
+
+  }catch {
+    renderEmptyCard(cards)
+    //
   }
-})()
 
-let count = 0;
-let total = 0;
-
-function createItem(value) {
-  const template = `
-    <tr>
-      <td>${++count}</td>
-      <td>${value}</td>
-      <td>${total += value}</td>
-    </tr>
-    `;
-
-  return template;
 }
 
-function renderRecordItem() {
-  const dice = +getNode('#cube').getAttribute('dice');
-  insertLast('tbody', createItem(dice));
+renderUserList();
+
+
+function handleDeleteCard(e){
+  const button = e.target.closest('button')
+
+  if(!button) return;
+
+  const article = button.parentElement;
+  const index = article.dataset.index.slice(5);
+  
+  tiger.delete(`${END_POINT}/${index}`)
+  .then(()=>{
+    alert('삭제가 완료되었습니다.');
+    clearContent(cards);
+    renderUserList();
+  })
 }
 
-function handleRecord() {
-  recordListWrapper.hidden = false;
-  renderRecordItem();
-  endScroll(recordListWrapper);
+cards.addEventListener('click', handleDeleteCard);
+
+const createButton = getNode('.create');
+const cancelButton = getNode('.cancel');
+const doneButton = getNode('.done');
+const nameField = getNode('#nameField');
+
+function handleCreate() {
+  gsap.to('.pop', {autoAlpha:1})
 }
 
-function handleReset() {
-  clearContent('tbody');
-  count = 0;
-  total = 0;
-  recordListWrapper.hidden = true;
+function handleCancel(e) {
+  e.stopPropagation();
+  gsap.to('.pop',{autoAlpha:0})
 }
 
-rollingButton.addEventListener('click', handleRollingDice);
-recordButton.addEventListener('click', handleRecord);
-resetButton.addEventListener('click', handleReset);
+function handleDone(e) {
+  e.preventDefault();
+
+  const username = getNode('#nameField').value;
+  const email = getNode('#emailField').value;
+  const website = getNode('#siteField').value;
+
+  tiger.post(END_POINT,  {username, email, website})
+  .then(() => {
+    gsap.to('.pop', {autoAlpha:0})
+    clearContent(cards);
+    renderUserList();
+    getNode('#nameField').value = '';
+    getNode('#emailField').value = '';
+    getNode('#siteField').value = '';
+  })
+}
+
+createButton.addEventListener('click', handleCreate)
+cancelButton.addEventListener('click', handleCancel)
+doneButton.addEventListener('click', handleDone);

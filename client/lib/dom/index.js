@@ -4,6 +4,7 @@ export * from './css.js'
 export * from './insert.js'
 export * from './getNode.js'
 export * from './showAlert.js'
+export * from './color.js'
 export {default as clearContent} from './clearContent.js'
 
 

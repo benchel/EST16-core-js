@@ -1,0 +1,148 @@
+import { insertLast } from '../dom/insert.js'
+import { getNode } from '../dom/index.js';
+import { isNumber, isObject } from './type.js';
+import { xhrPromise } from './xhr.js';
+
+function delay(callback, timeout = 500) {
+  setTimeout(callback, timeout);
+}
+
+const first = getNode('.first');
+const second = getNode('.second');
+
+// delay(() => {
+//   second.style.top = '-100px';
+//   delay(() => {
+//     second.style.transform = 'rotate(360deg)';
+//     delay(() => {
+//       second.style.top = '0px';
+//     });
+//   });
+// });
+
+
+
+const shouldRejected = false;
+
+const p = new Promise((resolve, reject) => {
+  if (!shouldRejected) {
+    resolve('성공입니다!');
+  } else {
+    reject({ message: '알 수 없는 오류' });
+  }
+});
+
+// p.then((res)=>{
+//   console.log( res );
+  
+// })
+// .then((res)=>{
+//   console.log( res );
+  
+// })
+ // promise object
+
+
+const defaultOptions = {
+  shouldRejected: false,
+  data: '성공',
+  errorMessage: '알 수 없는 오류',
+  timeout: 1000
+}
+
+export function delayP(options) {
+
+  let config =  {...defaultOptions};
+
+  if(isNumber(options)){
+    config.timeout = options;
+  }
+  if(isObject(options)){
+    config = {...defaultOptions,...options};
+  }
+
+  const {shouldReacted, data, errorMessage, timeout} = config;
+
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (!shouldRejected) resolve(data);
+      else reject(errorMessage);
+    }, timeout);
+  });
+}
+
+
+// delayP(false,{name:'tiger'},{message:'...'},1000)
+// delayP(1000)
+
+
+
+// delay(() => {
+//   second.style.top = '-100px';
+//   delay(() => {
+//     second.style.transform = 'rotate(360deg)';
+//     delay(() => {
+//       second.style.top = '0px';
+//     });
+//   });
+// });
+
+
+// Promise를 사용하는 이유?
+// - 콜백의 한계
+// - 콜백 지옥 탈출
+// - 가독성
+// - 비동기 작업 (순차적으로 일을 처리하는) .then
+
+
+// delayP()
+// .then(()=>{
+//   first.style.top = '-100px';
+//   return delayP();
+// })
+// .then(()=>{
+//   first.style.transform = 'rotate(360deg)';
+//   return delayP();
+// })
+// .then(()=>{
+//   first.style.top = '0';
+  
+// })
+
+
+// async와 await
+async function f(){
+  return 1;
+}
+
+
+// 함수에 async 키워드를 붙이면 그 함수는 무조건 Promise Object를 반환
+
+/*
+f().then((res) => {
+  console.log(res);
+})
+*/
+
+// await 를 붙이면 promise result를 밖으로 꺼낼 수 있다.
+const result = await f();
+
+// await 를 붙이면 코드 실행 흐름을 제어할 수 있다.
+// 비동기 작업이 완료되면 다음 코드를 실행한다.
+// 완료 전까지는 멈춰있음
+async function getData(){
+
+  const data = await xhrPromise.get('https://pokeapi.co/api/v2/pokemon/1000')
+
+  insertLast(document.body,`<img src="${data.sprites.other.showdown['front_default']}" alt="" />`)
+
+  // data.forEach((user)=>{
+  //   insertLast(document.body,`<div>${user.name}</div>`)
+  // })
+  
+
+  
+
+}
+
+//getData();
